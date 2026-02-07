@@ -3,8 +3,8 @@ layout: home
 permalink: index.html
 
 # Please update this with your repository name and project title
-repository-name: eYY-co2060-Bloodbank-Managing-System
-title: Bloodbank-Managing-System
+repository-name: eYY-co2060-Blood-Banking-Management-System
+title: Blood-Banking-Management-System
 ---
 
 [comment]: # "This is the standard layout for the project, but you can clean this and use your own template, and add more information required for your own project"
@@ -20,8 +20,7 @@ If your followed all the given instructions correctly, your repository will be a
 A HTML template integrated with the given GitHub repository templates, based on github.com/cepdnaclk/eYY-project-theme . If you like to remove this default theme and make your own web page, you can remove the file, docs/_config.yml and create the site using HTML. -->
 
 # Project Title
-
----
+Blood Banking Management System
 
 ## Team
 -  e23157, J.Sivapriya , [email](mailto:e23157@eng.pdn.ac.lk)
