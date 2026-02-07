@@ -3,8 +3,8 @@ layout: home
 permalink: index.html
 
 # Please update this with your repository name and project title
-repository-name: eYY-co2060-project-template
-title: Project Template
+repository-name: eYY-co2060-Bloodbank-Managing-System
+title: Bloodbank-Managing-System
 ---
 
 [comment]: # "This is the standard layout for the project, but you can clean this and use your own template, and add more information required for your own project"
@@ -24,9 +24,10 @@ A HTML template integrated with the given GitHub repository templates, based on 
 ---
 
 ## Team
--  eNumber, Name, [email](mailto:name@email.com)
--  eNumber, Name, [email](mailto:name@email.com)
--  eNumber, Name, [email](mailto:name@email.com)
+-  e23157, J.Sivapriya , [email](mailto:e23157@eng.pdn.ac.lk)
+-  e23011, P.Akshayaa, [email](mailto:e23011@eng.pdn.ac.lk)
+-  e23162, K.Hetharani, [email](mailto:e23162@eng.pdn.ac.lk)
+-  e23411, GW.Chavindi Heshari Veedisha , [email](mailto:e23411eng.pdn.ac.lk)
 
 <!-- Image (photo/drawing of the final hardware) should be here -->
 
@@ -43,17 +44,53 @@ A HTML template integrated with the given GitHub repository templates, based on 
 6. [Links](#links)
 
 ## Introduction
+Problem Domain: 
+The current challenges in traditional blood banking often stem from fragmented data and delayed communication. Without a centralized digital system, many blood banks face: 
+* Inventory Inefficiency: Difficulty tracking expiration dates, leading to wastage of life-saving units.
+  * Accessibility Hurdles: Patients and hospitals struggle to find specific blood types (like O-negative) in real-time during emergencies.
+  * Donor Retention: Lack of a structured system to notify donors when they are eligible to donate again. 
+  * Safety Risks: Manual record-keeping increases the risk of human error regarding blood screening results and donor history.
 
-Description of the real world problem and solution, impact
-
+Our Proposed Solution:
+The proposed Blood Bank Management System is a centralized, web-based platform designed to automate the entire lifecycle of blood donation from donor registration and health screening to inventory management and hospital distribution. By providing a real-time dashboard for administrators and a user-friendly portal for donors, the system ensures that the right blood type reaches the right patient at the right time.
 
 ## Solution Architecture
+The Blood Bank Management System (BBMS) follows a three-tier architecture with separate frontend, backend, and database layers. Additional background services handle notifications and scheduled tasks to ensure timely alerts.
 
-High level diagram + description
+Frontend (React.js)
+    -User interface for donors, hospitals, and admins
+    -Displays dashboards, forms, alerts
+    -Calls backend APIs (REST) to fetch or send data
+
+Backend (Spring Boot)
+    1.Handles business logic
+      -Donor management (registration, eligibility checks)
+      -Inventory management (stock, expiry, dispatch)
+      -Hospital requests (submit, track, approve)
+    2.Manages authentication and authorization
+    3.Exposes REST APIs for the frontend
+    4.Communicates with database and triggers background tasks
+
+Database (MySQL)
+  Stores donor data, blood inventory, hospital requests, lab results
+  Maintains relations and constraints to ensure integrity
+  Supports queries from backend services
+
+Background Jobs / Notifications
+  Scheduled tasks for:
+    -Blood expiry alerts
+    -Donor eligibility reminders
+    -Low-stock notifications
+  Uses email (SMTP) or push notifications (FCM)
+  Ensures real-time responsiveness without manual intervention
+
 
 ## Software Designs
 
-Detailed designs with many sub-sections
+This section presents the software design of the Blood Bank Management System (BBMS), detailing the modules, data flow, database schema, and user interface design. It describes how the system components interact and how functionality is implemented across frontend, backend, and database.
+1. Donor Management Module
+2. Inventory & Lab Tracking Module
+3. Hospital & Request Management Module
 
 ## Testing
 
