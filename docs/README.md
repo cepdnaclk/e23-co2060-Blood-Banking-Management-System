@@ -26,7 +26,7 @@ Blood Banking Management System
 -  e23157, J.Sivapriya , (mailto:e23157@eng.pdn.ac.lk)
 -  e23011, P.Akshayaa, (mailto:e23011@eng.pdn.ac.lk)
 -  e23162, K.Hetharani, (mailto:e23162@eng.pdn.ac.lk)
--  e23411, GW.Chavindi Heshari Veedisha , (mailto:e23411eng.pdn.ac.lk)
+-  e23411, GW.Chavindi Heshari Veedisha , (mailto:e23411@eng.pdn.ac.lk)
 
 <!-- Image (photo/drawing of the final hardware) should be here -->
 
