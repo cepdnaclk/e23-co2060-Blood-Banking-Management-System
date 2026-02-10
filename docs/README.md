@@ -23,10 +23,10 @@ A HTML template integrated with the given GitHub repository templates, based on 
 Blood Banking Management System
 
 ## Team
--  e23157, J.Sivapriya , [email](mailto:e23157@eng.pdn.ac.lk)
--  e23011, P.Akshayaa, [email](mailto:e23011@eng.pdn.ac.lk)
--  e23162, K.Hetharani, [email](mailto:e23162@eng.pdn.ac.lk)
--  e23411, GW.Chavindi Heshari Veedisha , [email](mailto:e23411eng.pdn.ac.lk)
+-  e23157, J.Sivapriya , (mailto:e23157@eng.pdn.ac.lk)
+-  e23011, P.Akshayaa, (mailto:e23011@eng.pdn.ac.lk)
+-  e23162, K.Hetharani, (mailto:e23162@eng.pdn.ac.lk)
+-  e23411, GW.Chavindi Heshari Veedisha , (mailto:e23411eng.pdn.ac.lk)
 
 <!-- Image (photo/drawing of the final hardware) should be here -->
 
