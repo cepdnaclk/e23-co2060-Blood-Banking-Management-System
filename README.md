@@ -2,9 +2,13 @@ ___
 # BLOOD BANKING MANAGEMENT SYSTEM 
 ___
 
-# eYY-co2060-project-template
+# About the project
+The Blood Banking Management System is a web-based software solution designed to
+efficiently manage blood bank operations such as donor registration, blood inventory
+tracking, blood requests, and distribution.
 
-This is a sample repository you can use for your Software Systems Design Project. Once you followed these instructions, remove the text and add a brief introduction to here.
+This system aims to reduce blood wastage, improve availability during emergencies,
+and provide real-time information to hospitals and donors.
 
 ### Enable GitHub Pages
 
