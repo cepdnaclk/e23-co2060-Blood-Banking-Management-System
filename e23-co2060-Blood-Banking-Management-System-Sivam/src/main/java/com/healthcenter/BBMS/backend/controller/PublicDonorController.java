@@ -67,7 +67,7 @@ public class PublicDonorController {
         }
 
         // Default values
-        donor.setStatus("PENDING_VERIFICATION");
+        donor.setStatus("PENDING");
         donor.setCreatedAt(LocalDateTime.now());
         // first time registration
         donor.setLastDonationDate(null);
