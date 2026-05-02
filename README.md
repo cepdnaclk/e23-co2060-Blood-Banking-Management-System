@@ -71,5 +71,5 @@ The overall goal is to **minimize blood wastage, improve accessibility, and enha
 
 ### Clone Repository
 ```bash
-git clone <your-repo-link>
-cd <project-folder>
+git clone https://github.com/cepdnaclk/e23-co2060-Blood-Banking-Management-System.git
+cd e23-co2060-Blood-Banking-Management-System
