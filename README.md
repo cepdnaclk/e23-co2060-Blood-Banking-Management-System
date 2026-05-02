@@ -50,9 +50,9 @@ The overall goal is to **minimize blood wastage, improve accessibility, and enha
 
 | Component | Technology | Description |
 |----------|-----------|------------|
-| Frontend | React.js | Interactive UI |
-| Backend | Spring Boot | REST API |
-| Database | MySQL | Data storage |
+| Frontend | ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) | Interactive UI |
+| Backend | ![Spring Boot](https://img.shields.io/badge/SpringBoot-6DB33F?style=flat-square&logo=springboot&logoColor=white) | REST API |
+| Database | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white) | Data storage |
 | API | REST | Communication |
 
 ---
