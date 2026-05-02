@@ -1,5 +1,8 @@
 # 🩸 Blood Banking Management System
 
+![Project Status](https://img.shields.io/badge/Status-In%20Development-orange?style=flat-square)
+![Team](https://img.shields.io/badge/Team-Code%20crush-red?style=flat-square)
+
 > A comprehensive web-based platform designed to digitize and streamline blood bank operations, ensuring efficient donor management, real-time inventory tracking, and faster emergency response.
 
 ---
