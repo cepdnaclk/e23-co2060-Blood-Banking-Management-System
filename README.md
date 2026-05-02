@@ -68,7 +68,7 @@ The overall goal is to **minimize blood wastage, improve accessibility, and enha
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js & npm  
+- React.js & npm  
 - Java (JDK 17+)  
 - MySQL  
 
