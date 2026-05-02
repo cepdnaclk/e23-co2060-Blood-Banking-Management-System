@@ -1,61 +1,75 @@
-___
-# BLOOD BANKING MANAGEMENT SYSTEM 
-___
+# 🩸 Blood Banking Management System
 
-# About the project
-The Blood Banking Management System is a web-based software solution designed to
-efficiently manage blood bank operations such as donor registration, blood inventory
-tracking, blood requests, and distribution.
+> A comprehensive web-based platform designed to digitize and streamline blood bank operations, ensuring efficient donor management, real-time inventory tracking, and faster emergency response.
 
-This system aims to reduce blood wastage, improve availability during emergencies,
-and provide real-time information to hospitals and donors.
+---
 
-### Enable GitHub Pages
+## 📖 About the Project
 
-You can put the things to be shown in GitHub pages into the _docs/_ folder. Both html and md file formats are supported. You need to go to settings and enable GitHub pages and select _main_ branch and _docs_ folder from the dropdowns, as shown in the below image.
+The Blood Banking Management System is a full-stack web application developed to modernize and optimize blood bank workflows.
 
-![image](https://user-images.githubusercontent.com/11540782/98789936-028d3600-2429-11eb-84be-aaba665fdc75.png)
+This system focuses on two major aspects:
 
-### Special Configurations
+### Efficient Blood Bank Operations
+Digitizing donor registration, blood collection, inventory tracking, and distribution processes to reduce manual errors and improve efficiency.
 
-These projects will be automatically added into [https://projects.ce.pdn.ac.lk](). If you like to show more details about your project on this site, you can fill the parameters in the file, _/docs/index.json_
+### Emergency & Real-Time Access
+Providing hospitals and medical staff with real-time access to blood availability, enabling faster response during critical situations.
 
-```
-{
-  "title": "This is the title of the project",
-  "team": [
-    {
-      "name": "Team Member Name 1",
-      "email": "email@eng.pdn.ac.lk",
-      "eNumber": "E/yy/xxx"
-    },
-    {
-      "name": "Team Member Name 2",
-      "email": "email@eng.pdn.ac.lk",
-      "eNumber": "E/yy/xxx"
-    },
-    {
-      "name": "Team Member Name 3",
-      "email": "email@eng.pdn.ac.lk",
-      "eNumber": "E/yy/xxx"
-    }
-  ],
-  "supervisors": [
-    {
-      "name": "Dr. Supervisor 1",
-      "email": "email@eng.pdn.ac.lk"
-    },
-    {
-      "name": "Supervisor 2",
-      "email": "email@eng.pdn.ac.lk"
-    }
-  ],
-  "tags": ["Web", "Software Systems", "CO2060"]
-}
-```
+The overall goal is to **minimize blood wastage, improve accessibility, and enhance coordination between donors and healthcare providers.**
 
-Once you filled this _index.json_ file, please verify the syntax is correct. (You can use [this](https://jsonlint.com/) tool).
+---
 
-### Page Theme
+## ✨ Key Features
 
-A custom theme integrated with this GitHub Page, which is based on [github.com/cepdnaclk/eYY-project-theme](https://github.com/cepdnaclk/eYY-project-theme). If you like to remove this default theme, you can remove the file, _docs/\_config.yml_ and use HTML based website.
+### 🧑‍🤝‍🧑 Donor Management
+- Online donor registration system  
+- Donor history tracking and eligibility management  
+- Automated donor record updates  
+
+### 🩸 Blood Inventory System
+- Real-time blood stock monitoring  
+- Blood group categorization and storage tracking  
+- Alerts for low stock levels  
+
+### 🚑 Blood Request & Distribution
+- Hospital blood request submission system  
+- Approval and allocation workflow  
+- Efficient blood distribution tracking  
+
+### 🔐 User Management
+- Role-based access control (Admin, Staff, Hospital Users)  
+- Secure authentication and authorization  
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology | Description |
+|----------|-----------|------------|
+| Frontend | React.js | Interactive UI |
+| Backend | Spring Boot | REST API |
+| Database | MySQL | Data storage |
+| API | REST | Communication |
+
+---
+
+## 🏗️ Architecture
+
+- Frontend (React): UI and user interactions  
+- Backend (Spring Boot): Business logic  
+- Database (MySQL): Data storage  
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js & npm  
+- Java (JDK 17+)  
+- MySQL  
+
+### Clone Repository
+```bash
+git clone <your-repo-link>
+cd <project-folder>
