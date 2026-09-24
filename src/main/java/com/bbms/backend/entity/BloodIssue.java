@@ -11,39 +11,44 @@ public class BloodIssue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long issueId;
 
-    private Long requestId;
-
-    private String hospitalName;
-
     private String bloodGroup;
 
     @Enumerated(EnumType.STRING)
     private BloodComponent.ComponentType componentType;
 
+
+
+    private LocalDate issueDate;
+
     private Double quantity;
 
-    private LocalDate issueDate = LocalDate.now();
+    private Long requestId;
 
-    // Getters & Setters
+    // AUTO DATE
+    @PrePersist
+    protected void onCreate() {
+        this.issueDate = LocalDate.now();
+    }
 
+    // GETTERS & SETTERS
     public Long getIssueId() { return issueId; }
     public void setIssueId(Long issueId) { this.issueId = issueId; }
-
-    public Long getRequestId() { return requestId; }
-    public void setRequestId(Long requestId) { this.requestId = requestId; }
-
-    public String getHospitalName() { return hospitalName; }
-    public void setHospitalName(String hospitalName) { this.hospitalName = hospitalName; }
 
     public String getBloodGroup() { return bloodGroup; }
     public void setBloodGroup(String bloodGroup) { this.bloodGroup = bloodGroup; }
 
     public BloodComponent.ComponentType getComponentType() { return componentType; }
-    public void setComponentType(BloodComponent.ComponentType componentType) { this.componentType = componentType; }
+    public void setComponentType(BloodComponent.ComponentType componentType) {
+        this.componentType = componentType;
+    }
+
+
+    public LocalDate getIssueDate() { return issueDate; }
+    public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
 
     public Double getQuantity() { return quantity; }
     public void setQuantity(Double quantity) { this.quantity = quantity; }
 
-    public LocalDate getIssueDate() { return issueDate; }
-    public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
+    public Long getRequestId() { return requestId; }
+    public void setRequestId(Long requestId) { this.requestId = requestId; }
 }

@@ -1,12 +1,16 @@
 package com.bbms.backend.controller;
 
-import com.bbms.backend.entity.BloodComponent;
 import com.bbms.backend.Repository.BloodComponentRepository;
 import com.bbms.backend.Repository.BloodTestRepository;
-import com.bbms.backend.entity.BloodTest;
-import com.bbms.backend.entity.Inventory;
 import com.bbms.backend.Repository.InventoryRepository;
+import com.bbms.backend.Repository.DonationRepository;
 
+import com.bbms.backend.entity.BloodComponent;
+import com.bbms.backend.entity.Inventory;
+import com.bbms.backend.entity.Donation;
+import com.bbms.backend.entity.OverallBloodTestStatus;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -14,88 +18,151 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/components")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class BloodComponentController {
 
     private final BloodComponentRepository componentRepo;
     private final BloodTestRepository testRepo;
     private final InventoryRepository inventoryRepo;
+    private final DonationRepository donationRepo;
 
-    public BloodComponentController(BloodComponentRepository componentRepo,
-                                    BloodTestRepository testRepo,
-                                    InventoryRepository inventoryRepo) {
+    public BloodComponentController(
+            BloodComponentRepository componentRepo,
+            BloodTestRepository testRepo,
+            InventoryRepository inventoryRepo,
+            DonationRepository donationRepo
+    ) {
         this.componentRepo = componentRepo;
         this.testRepo = testRepo;
         this.inventoryRepo = inventoryRepo;
+        this.donationRepo = donationRepo;
     }
 
-    // CREATE COMPONENTS
+    // ================= CREATE COMPONENT =================
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @PostMapping
     public String create(@RequestBody BloodComponent request) {
 
-        Long donationId = request.getDonationId();
+        // Validate donation input
+        if (request.getDonation() == null ||
+                request.getDonation().getDonationId() == null) {
 
-        // Preventing duplicate
-        if (componentRepo.existsByDonationId(donationId)) {
+            return "Donation ID is required";
+        }
+
+        Long donationId =
+                request.getDonation().getDonationId();
+
+        // Check donation exists
+        Donation donation = donationRepo.findById(donationId)
+                .orElseThrow(() ->
+                        new RuntimeException("Donation NOT FOUND"));
+
+        // Prevent duplicate components
+        if (componentRepo
+                .existsByDonation_DonationId(donationId)) {
+
             return "Components already created for this donation";
         }
 
-        // Checking blood test
-        List<BloodTest> tests = testRepo.findAll();
-
-        boolean isSafe = tests.stream()
-                .anyMatch(t -> t.getDonationId().equals(donationId)
-                        && t.getOverallResult() == BloodTest.Result.SAFE);
+        // Check SAFE blood test
+        boolean isSafe = testRepo.findAll()
+                .stream()
+                .anyMatch(t ->
+                        t.getDonation()
+                                .getDonationId()
+                                .equals(donationId)
+                                &&
+                                t.getOverallResult()
+                                        == OverallBloodTestStatus.SAFE
+                );
 
         if (!isSafe) {
             return "Blood is not SAFE";
         }
 
-        // Set expiry based on type
-        LocalDate expiry = getExpiryDate(request.getComponentType());
+        // Set correct relationship
+        request.setDonation(donation);
 
-        request.setExpiryDate(expiry);
+        // Set expiry date
+        request.setExpiryDate(
+                getExpiryDate(request.getComponentType()));
 
-        BloodComponent saved = componentRepo.save(request);
+        BloodComponent saved =
+                componentRepo.save(request);
 
-        // Create inventory record
+        // ================= INVENTORY =================
+
         Inventory inv = new Inventory();
-        inv.setComponentId(saved.getComponentId());
-        inv.setDonationId(saved.getDonationId());
-        inv.setComponentType(saved.getComponentType());
-        inv.setQuantity(saved.getQuantity());
 
-        // TEMP: hardcoded blood group
-        inv.setBloodGroup("A+");
+        inv.setComponentId(
+                saved.getComponentId());
+
+        inv.setDonationId(donationId);
+
+        inv.setComponentType(
+                saved.getComponentType());
+
+        inv.setQuantity(
+                saved.getQuantity());
+
+        String bloodGroup =
+                donation.getDonor()
+                        .getBloodGroup()
+                        .name()
+                        .replace("_POSITIVE", "+")
+                        .replace("_NEGATIVE", "-");
+
+        inv.setBloodGroup(bloodGroup);
 
         inventoryRepo.save(inv);
 
         return "Component created successfully";
     }
 
-    // Get all
+    // ================= GET ALL =================
+    // ALL FOUR ROLES CAN VIEW
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'HOSPITAL_STAFF', 'RECEPTION_STAFF')")
     @GetMapping
     public List<BloodComponent> getAll() {
         return componentRepo.findAll();
     }
 
-    // Get by donation
+    // ================= GET BY DONATION =================
+    // ALL FOUR ROLES CAN VIEW
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'HOSPITAL_STAFF', 'RECEPTION_STAFF')")
     @GetMapping("/donation/{id}")
-    public List<BloodComponent> getByDonation(@PathVariable Long id) {
-        return componentRepo.findByDonationId(id);
+    public List<BloodComponent> getByDonation(
+            @PathVariable Long id) {
+
+        return componentRepo.findByDonation_DonationId(id);
     }
 
-    // Helper
-    private LocalDate getExpiryDate(BloodComponent.ComponentType type) {
+    // ================= EXPIRY LOGIC =================
+
+    private LocalDate getExpiryDate(
+            BloodComponent.ComponentType type) {
+
         LocalDate today = LocalDate.now();
 
         switch (type) {
+
             case RBC:
                 return today.plusDays(42);
+
             case PLASMA:
                 return today.plusDays(365);
+
             case PLATELETS:
                 return today.plusDays(5);
+
+            case CRYOPRECIPITATE:
+                return today.plusDays(365);
+
+            case WHOLE_BLOOD:
+                return today.plusDays(35);
+
             default:
                 return today.plusDays(30);
         }

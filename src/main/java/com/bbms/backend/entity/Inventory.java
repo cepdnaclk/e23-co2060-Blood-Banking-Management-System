@@ -14,14 +14,31 @@ public class Inventory {
 
     private Long donationId;
 
-    private String bloodGroup; // A+, B+, O-, etc.
+    private String bloodGroup;
 
     @Enumerated(EnumType.STRING)
     private BloodComponent.ComponentType componentType;
 
     private Double quantity;
 
-    // Getters & Setters
+    private Double reorderLevel = 5.0;
+
+    private String stockStatus;
+
+    private String storageLocation;
+
+    // 🔥 STATUS LOGIC
+    public void updateStockStatus() {
+        if (quantity == null || quantity <= 0) {
+            stockStatus = "OUT_OF_STOCK";
+        } else if (quantity < reorderLevel) {
+            stockStatus = "LOW_STOCK";
+        } else {
+            stockStatus = "AVAILABLE";
+        }
+    }
+
+    // ✅ GETTERS & SETTERS
 
     public Long getInventoryId() {
         return inventoryId;
@@ -69,5 +86,29 @@ public class Inventory {
 
     public void setQuantity(Double quantity) {
         this.quantity = quantity;
+    }
+
+    public Double getReorderLevel() {
+        return reorderLevel;
+    }
+
+    public void setReorderLevel(Double reorderLevel) {
+        this.reorderLevel = reorderLevel;
+    }
+
+    public String getStockStatus() {
+        return stockStatus;
+    }
+
+    public void setStockStatus(String stockStatus) {
+        this.stockStatus = stockStatus;
+    }
+
+    public String getStorageLocation() {
+        return storageLocation;
+    }
+
+    public void setStorageLocation(String storageLocation) {
+        this.storageLocation = storageLocation;
     }
 }
