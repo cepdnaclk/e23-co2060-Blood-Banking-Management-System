@@ -16,7 +16,7 @@ public class BloodIssue {
     @Enumerated(EnumType.STRING)
     private BloodComponent.ComponentType componentType;
 
-    private String hospitalName;
+
 
     private LocalDate issueDate;
 
@@ -42,10 +42,6 @@ public class BloodIssue {
         this.componentType = componentType;
     }
 
-    public String getHospitalName() { return hospitalName; }
-    public void setHospitalName(String hospitalName) {
-        this.hospitalName = hospitalName;
-    }
 
     public LocalDate getIssueDate() { return issueDate; }
     public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
