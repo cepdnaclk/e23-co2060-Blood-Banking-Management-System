@@ -48,7 +48,7 @@ public class DonorScreeningService {
         screening.setDonor(donor);
 
         // 🔥 ELIGIBILITY LOGIC
-        if (screening.getWeight() < 50 || screening.getHemoglobin() < 12.5) {
+        if (screening.getWeight() < 50 || screening.getHemoglobin() < 12.5 || screening.getTemperature() >37.5 || screening.getPulseRate()>100) {
 
             screening.setEligibilityStatus(ScreeningStatus.TEMPORARILY_DEFERRED);
 
