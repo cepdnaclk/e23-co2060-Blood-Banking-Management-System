@@ -1,11 +1,11 @@
 package com.bbms.backend.controller;
 
 import com.bbms.backend.Repository.BloodRequestRepository;
-import com.bbms.backend.Repository.InventoryRepository;
 import com.bbms.backend.entity.BloodRequest;
-import com.bbms.backend.entity.Inventory;
 import com.bbms.backend.entity.RequestStatus;
+import com.bbms.backend.service.AlertService;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,73 +16,137 @@ import java.util.List;
 public class BloodRequestController {
 
     private final BloodRequestRepository requestRepo;
-    private final InventoryRepository inventoryRepo;
+    private final AlertService alertService;
 
-    public BloodRequestController(BloodRequestRepository requestRepo,
-                                  InventoryRepository inventoryRepo) {
+    public BloodRequestController(
+            BloodRequestRepository requestRepo,
+            AlertService alertService) {
+
         this.requestRepo = requestRepo;
-        this.inventoryRepo = inventoryRepo;
+        this.alertService = alertService;
     }
 
-    // 🔹 CREATE REQUEST
+    // =========================================================
+    // CREATE REQUEST
+    // =========================================================
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'HOSPITAL_STAFF')")
     @PostMapping
     public String create(@RequestBody BloodRequest request) {
-        requestRepo.save(request);
+
+        // Always start a new request as PENDING
+        request.setRequestStatus(RequestStatus.PENDING);
+
+        BloodRequest savedRequest =
+                requestRepo.save(request);
+
+        // Emergency alert
+        if (savedRequest.getUrgencyLevel() != null
+                && savedRequest.getUrgencyLevel()
+                .name()
+                .equals("EMERGENCY")) {
+
+            alertService.createEmergencyAlert(
+                    "Hospital ID " + savedRequest.getHospitalId(),
+                    savedRequest.getBloodGroup()
+            );
+        }
+
         return "Request Created";
     }
 
-    // 🔹 GET ALL
+    // =========================================================
+    // GET ALL REQUESTS
+    // =========================================================
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'HOSPITAL_STAFF')")
     @GetMapping
     public List<BloodRequest> getAll() {
+
         return requestRepo.findAll();
     }
 
-    // 🔹 GET PENDING
+    // =========================================================
+    // GET PENDING REQUESTS
+    // =========================================================
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'HOSPITAL_STAFF')")
     @GetMapping("/pending")
     public List<BloodRequest> getPending() {
-        return requestRepo.findByRequestStatus(RequestStatus.PENDING);
+
+        return requestRepo.findByRequestStatus(
+                RequestStatus.PENDING
+        );
     }
 
-    // 🔹 APPROVE
+    // =========================================================
+    // APPROVE REQUEST
+    // =========================================================
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/approve")
     public String approve(@PathVariable Long id) {
 
         BloodRequest req = requestRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Blood request not found"
+                        )
+                );
 
-        Inventory inv = inventoryRepo.findAll().stream()
-                .filter(i -> i.getBloodGroup().equals(req.getBloodGroup())
-                        && i.getComponentType() == req.getComponentType())
-                .findFirst()
-                .orElse(null);
+        // Prevent approving an already processed request
+        if (req.getRequestStatus() != RequestStatus.PENDING) {
 
-        if (inv == null || inv.getQuantity() < req.getUnitsRequired()) {
-            req.setRequestStatus(RequestStatus.REJECTED);
-            requestRepo.save(req);
-            return "Not enough stock";
+            return "Request is already "
+                    + req.getRequestStatus();
         }
 
-        // 🔥 REDUCE STOCK
-        inv.setQuantity(inv.getQuantity() - req.getUnitsRequired());
-        inv.updateStockStatus();
-        inventoryRepo.save(inv);
+        /*
+         * IMPORTANT:
+         *
+         * Approval does NOT reduce inventory.
+         * Approval does NOT create BloodIssue.
+         *
+         * Those actions happen when blood is actually issued.
+         */
 
-        req.setRequestStatus(RequestStatus.APPROVED);
+        req.setRequestStatus(
+                RequestStatus.APPROVED
+        );
+
         requestRepo.save(req);
 
-        return "Approved";
+        return "Request Approved";
     }
 
-    // 🔹 REJECT
+    // =========================================================
+    // REJECT REQUEST
+    // =========================================================
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/reject")
     public String reject(@PathVariable Long id) {
 
         BloodRequest req = requestRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Blood request not found"
+                        )
+                );
 
-        req.setRequestStatus(RequestStatus.REJECTED);
+        // Prevent rejecting an already processed request
+        if (req.getRequestStatus() != RequestStatus.PENDING) {
+
+            return "Request is already "
+                    + req.getRequestStatus();
+        }
+
+        req.setRequestStatus(
+                RequestStatus.REJECTED
+        );
+
         requestRepo.save(req);
 
-        return "Rejected";
+        return "Request Rejected";
     }
 }

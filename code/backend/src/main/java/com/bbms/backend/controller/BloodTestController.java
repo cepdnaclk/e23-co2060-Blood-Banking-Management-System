@@ -4,6 +4,7 @@ import com.bbms.backend.Repository.BloodTestRepository;
 import com.bbms.backend.Repository.DonationRepository;
 import com.bbms.backend.entity.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -24,89 +25,131 @@ public class BloodTestController {
     }
 
     // ===================== CREATE =====================
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @PostMapping
-    public ResponseEntity<?> createBloodTest(@RequestBody BloodTest test) {
+    public ResponseEntity<?> createBloodTest(
+            @RequestBody BloodTest test) {
 
-        // ✅ Validate donation
-        if (test.getDonation() == null || test.getDonation().getDonationId() == null) {
-            return ResponseEntity.badRequest().body("Donation ID is required.");
+        // Validate donation
+        if (test.getDonation() == null ||
+                test.getDonation().getDonationId() == null) {
+
+            return ResponseEntity.badRequest()
+                    .body("Donation ID is required.");
         }
 
-        // ✅ Fetch real donation from DB
+        // Fetch real donation from DB
         Donation donation = donationRepository
                 .findById(test.getDonation().getDonationId())
                 .orElse(null);
 
         if (donation == null) {
-            return ResponseEntity.badRequest().body("Donation not found.");
+            return ResponseEntity.badRequest()
+                    .body("Donation not found.");
         }
 
-        // ✅ Check donation status
+        // Check donation status
         if (donation.getDonationStatus() == null ||
-                donation.getDonationStatus() != DonationStatus.COMPLETED) {
-            return ResponseEntity.badRequest().body("Donation must be COMPLETED.");
+                donation.getDonationStatus()
+                        != DonationStatus.COMPLETED) {
+
+            return ResponseEntity.badRequest()
+                    .body("Donation must be COMPLETED.");
         }
 
-        // ✅ OPTIONAL: prevent duplicate test
+        // Prevent duplicate test
         if (bloodTestRepository.existsByDonation(donation)) {
-            return ResponseEntity.badRequest().body("Test already exists for this donation.");
+
+            return ResponseEntity.badRequest()
+                    .body("Test already exists for this donation.");
         }
 
-        // ✅ Set correct relation
+        // Set correct relation
         test.setDonation(donation);
 
-        // ✅ Auto set date
+        // Auto set date
         if (test.getTestDate() == null) {
             test.setTestDate(LocalDate.now());
         }
 
-        // ✅ Calculate overall result
-        test.setOverallResult(calculateOverallResult(test));
+        // Calculate overall result
+        test.setOverallResult(
+                calculateOverallResult(test));
 
-        return ResponseEntity.ok(bloodTestRepository.save(test));
+        return ResponseEntity.ok(
+                bloodTestRepository.save(test));
     }
 
     // ===================== GET ALL =====================
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @GetMapping
     public ResponseEntity<?> getAllBloodTests() {
+
         try {
-            List<BloodTest> tests = bloodTestRepository.findAll();
+            List<BloodTest> tests =
+                    bloodTestRepository.findAll();
+
             return ResponseEntity.ok(tests);
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error fetching data: " + e.getMessage());
+
+            return ResponseEntity.internalServerError()
+                    .body("Error fetching data: "
+                            + e.getMessage());
         }
     }
 
     // ===================== GET BY ID =====================
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getBloodTestById(@PathVariable Long id) {
+    public ResponseEntity<?> getBloodTestById(
+            @PathVariable Long id) {
+
         return bloodTestRepository.findById(id)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.badRequest().body("Blood test not found"));
+                .orElseGet(() ->
+                        ResponseEntity.badRequest()
+                                .body("Blood test not found"));
     }
 
     // ===================== GET BY DONATION =====================
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @GetMapping("/donation/{donationId}")
-    public ResponseEntity<?> getByDonation(@PathVariable Long donationId) {
+    public ResponseEntity<?> getByDonation(
+            @PathVariable Long donationId) {
 
-        Donation donation = donationRepository.findById(donationId).orElse(null);
+        Donation donation =
+                donationRepository.findById(donationId)
+                        .orElse(null);
 
         if (donation == null) {
-            return ResponseEntity.badRequest().body("Donation not found");
+            return ResponseEntity.badRequest()
+                    .body("Donation not found");
         }
 
-        return ResponseEntity.ok(bloodTestRepository.findByDonation(donation));
+        return ResponseEntity.ok(
+                bloodTestRepository.findByDonation(donation));
     }
 
     // ===================== UPDATE =====================
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateBloodTest(@PathVariable Long id,
-                                             @RequestBody BloodTest updated) {
+    public ResponseEntity<?> updateBloodTest(
+            @PathVariable Long id,
+            @RequestBody BloodTest updated) {
 
-        BloodTest test = bloodTestRepository.findById(id).orElse(null);
+        BloodTest test =
+                bloodTestRepository.findById(id)
+                        .orElse(null);
 
         if (test == null) {
-            return ResponseEntity.badRequest().body("Test not found");
+            return ResponseEntity.badRequest()
+                    .body("Test not found");
         }
 
         test.setHiv(updated.getHiv());
@@ -116,25 +159,35 @@ public class BloodTestController {
         test.setSyphilis(updated.getSyphilis());
         test.setRemarks(updated.getRemarks());
 
-        // 🔥 Recalculate
-        test.setOverallResult(calculateOverallResult(test));
+        // Recalculate overall result
+        test.setOverallResult(
+                calculateOverallResult(test));
 
-        return ResponseEntity.ok(bloodTestRepository.save(test));
+        return ResponseEntity.ok(
+                bloodTestRepository.save(test));
     }
 
     // ===================== DELETE =====================
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBloodTest(@PathVariable Long id) {
+    public ResponseEntity<?> deleteBloodTest(
+            @PathVariable Long id) {
+
         if (!bloodTestRepository.existsById(id)) {
-            return ResponseEntity.badRequest().body("Test not found");
+            return ResponseEntity.badRequest()
+                    .body("Test not found");
         }
 
         bloodTestRepository.deleteById(id);
-        return ResponseEntity.ok("Deleted successfully");
+
+        return ResponseEntity.ok(
+                "Deleted successfully");
     }
 
     // ===================== LOGIC =====================
-    private OverallBloodTestStatus calculateOverallResult(BloodTest test) {
+    private OverallBloodTestStatus calculateOverallResult(
+            BloodTest test) {
 
         TestResultStatus[] results = {
                 test.getHiv(),
@@ -146,13 +199,15 @@ public class BloodTestController {
 
         boolean hasPending = false;
 
-        for (TestResultStatus r : results) {
+        for (TestResultStatus result : results) {
 
-            if (r == TestResultStatus.POSITIVE) {
+            if (result == TestResultStatus.POSITIVE) {
                 return OverallBloodTestStatus.UNSAFE;
             }
 
-            if (r == null || r == TestResultStatus.PENDING) {
+            if (result == null ||
+                    result == TestResultStatus.PENDING) {
+
                 hasPending = true;
             }
         }
