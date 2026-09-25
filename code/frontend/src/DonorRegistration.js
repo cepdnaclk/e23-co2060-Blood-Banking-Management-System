@@ -21,7 +21,7 @@ function DonorRegistration() {
 
   const registerDonor = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/public/donors", {
+      const res = await fetch("https://backend-production-b77da.up.railway.app/api/public/donors", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
