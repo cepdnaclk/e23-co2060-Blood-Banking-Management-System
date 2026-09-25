@@ -1,125 +1,320 @@
 package com.bbms.backend.controller;
 
-import com.bbms.backend.Repository.*;
-import com.bbms.backend.entity.*;
+import com.bbms.backend.entity.Donation;
+import com.bbms.backend.entity.DonationStatus;
+import com.bbms.backend.entity.Donor;
+import com.bbms.backend.entity.DonorScreening;
+import com.bbms.backend.entity.ScreeningStatus;
+import com.bbms.backend.Repository.DonationRepository;
+import com.bbms.backend.Repository.DonorRepository;
+import com.bbms.backend.Repository.DonorScreeningRepository;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/donations")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class DonationController {
 
     private final DonationRepository donationRepository;
     private final DonorRepository donorRepository;
     private final DonorScreeningRepository screeningRepository;
 
-    public DonationController(DonationRepository donationRepository,
-                              DonorRepository donorRepository,
-                              DonorScreeningRepository screeningRepository) {
+    public DonationController(
+            DonationRepository donationRepository,
+            DonorRepository donorRepository,
+            DonorScreeningRepository screeningRepository) {
+
         this.donationRepository = donationRepository;
         this.donorRepository = donorRepository;
         this.screeningRepository = screeningRepository;
     }
 
+    // ============================================================
+    // GET ALL DONATIONS
+    // ============================================================
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'RECEPTION_STAFF')")
+    public ResponseEntity<List<Donation>> getAllDonations() {
+
+        return ResponseEntity.ok(
+                donationRepository.findAll()
+        );
+    }
+
+    // ============================================================
+    // GET DONATION BY ID
+    // ============================================================
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'RECEPTION_STAFF')")
+    public ResponseEntity<?> getDonationById(
+            @PathVariable Long id) {
+
+        Optional<Donation> donation =
+                donationRepository.findById(id);
+
+        if (donation.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Donation not found.");
+        }
+
+        return ResponseEntity.ok(donation.get());
+    }
+
+    // ============================================================
+    // GET COMPLETED DONATIONS
+    // ============================================================
+
+    @GetMapping("/completed")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'RECEPTION_STAFF')")
+    public ResponseEntity<List<Donation>> getCompletedDonations() {
+
+        return ResponseEntity.ok(
+                donationRepository.findByDonationStatus(
+                        DonationStatus.COMPLETED
+                )
+        );
+    }
+
+    // ============================================================
+    // ADD DONATION
+    // ============================================================
+
     @PostMapping("/{donorId}/{screeningId}")
-    public ResponseEntity<?> createDonation(@PathVariable Long donorId,
-                                            @PathVariable Long screeningId,
-                                            @RequestBody Donation donation) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTION_STAFF')")
+    public ResponseEntity<?> createDonation(
+            @PathVariable Long donorId,
+            @PathVariable Long screeningId,
+            @RequestBody Donation donation) {
 
-        Donor donor = donorRepository.findById(donorId)
-                .orElseThrow(() -> new RuntimeException("Donor not found"));
+        // --------------------------------------------------------
+        // 1. Check donor
+        // --------------------------------------------------------
 
-        // 🔴 Check donor status
-        if (donor.getStatus() != DonorStatus.ACTIVE) {
-            return ResponseEntity.badRequest().body("Donor is not ACTIVE");
+        Optional<Donor> donorOptional =
+                donorRepository.findById(donorId);
+
+        if (donorOptional.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Donor not found.");
         }
 
-        DonorScreening screening = screeningRepository.findById(screeningId)
-                .orElseThrow(() -> new RuntimeException("Screening not found"));
+        Donor donor = donorOptional.get();
 
-        if (screening.getEligibilityStatus() != ScreeningStatus.ELIGIBLE) {
-            return ResponseEntity.badRequest().body("Donor not eligible");
+        // --------------------------------------------------------
+        // 2. Check donor status
+        // --------------------------------------------------------
+
+        if (donor.getStatus() == null ||
+                !donor.getStatus()
+                        .name()
+                        .equalsIgnoreCase("ACTIVE")) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "Donation cannot be recorded. " +
+                                    "Donor must be ACTIVE."
+                    );
         }
+
+        // --------------------------------------------------------
+        // 3. Find screening
+        // --------------------------------------------------------
+
+        Optional<DonorScreening> screeningOptional =
+                screeningRepository.findById(screeningId);
+
+        if (screeningOptional.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Screening not found.");
+        }
+
+        DonorScreening screening =
+                screeningOptional.get();
+
+        // --------------------------------------------------------
+        // 4. Check screening belongs to donor
+        // --------------------------------------------------------
 
         if (screening.getDonor() == null ||
-                !screening.getDonor().getDonorId().equals(donorId)) {
-            return ResponseEntity.badRequest().body("Mismatch donor & screening");
+                screening.getDonor().getDonorId() == null ||
+                !screening.getDonor()
+                        .getDonorId()
+                        .equals(donorId)) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "The selected screening does not " +
+                                    "belong to the selected donor."
+                    );
         }
 
-        if (donationRepository.existsByScreening(screening)) {
-            return ResponseEntity.badRequest().body("Already donated for this screening");
+        // --------------------------------------------------------
+        // 5. Check screening eligibility
+        // --------------------------------------------------------
+
+        if (screening.getEligibilityStatus()
+                != ScreeningStatus.ELIGIBLE) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "Donation cannot be recorded. " +
+                                    "The screening result is not ELIGIBLE."
+                    );
         }
+
+        // --------------------------------------------------------
+        // 6. Prevent duplicate donation
+        // --------------------------------------------------------
+
+        if (donationRepository
+                .existsByScreening(screening)) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "A donation already exists " +
+                                    "for this screening."
+                    );
+        }
+
+        // --------------------------------------------------------
+        // 7. Validate units collected
+        // --------------------------------------------------------
+
+        if (donation.getUnitsCollected() == null ||
+                donation.getUnitsCollected() <= 0) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "Units collected must be greater than 0."
+                    );
+        }
+
+        // --------------------------------------------------------
+        // 8. Set donor and screening
+        // --------------------------------------------------------
 
         donation.setDonor(donor);
         donation.setScreening(screening);
-        donation.setDonationDate(LocalDate.now());
-        donation.setDonationStatus(DonationStatus.COMPLETED);
 
-        return ResponseEntity.ok(donationRepository.save(donation));
-    }
-    // 🔥 UPDATE DONATION
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateDonation(@PathVariable Long id,
-                                            @RequestBody Donation updated) {
+        // --------------------------------------------------------
+        // 9. Set default values
+        // --------------------------------------------------------
 
-        Donation donation = donationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Donation not found"));
-
-        // ✅ Update only allowed fields
-        donation.setUnitsCollected(updated.getUnitsCollected());
-        donation.setRemarks(updated.getRemarks());
-        donation.setDonationStatus(updated.getDonationStatus());
-
-        return ResponseEntity.ok(donationRepository.save(donation));
-    }
-
-    // ✅ GET ALL
-    @GetMapping
-    public List<Donation> getAllDonations() {
-        return donationRepository.findAll();
-    }
-
-    // ✅ GET BY ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getDonationById(@PathVariable Long id) {
-        return donationRepository.findById(id)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.badRequest().body("Donation not found"));
-    }
-
-    // 🔥 DELETE
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteDonation(@PathVariable Long id) {
-        donationRepository.deleteById(id);
-        return ResponseEntity.ok("Donation deleted successfully");
-    }
-
-    // 🔥 GET ONLY COMPLETED DONATIONS (FOR BLOOD TEST PAGE)
-    @GetMapping("/completed")
-    public ResponseEntity<?> getCompletedDonations() {
-        try {
-            return ResponseEntity.ok(
-                    donationRepository.findAll().stream()
-                            .filter(d -> d.getDonationStatus() == DonationStatus.COMPLETED)
-                            .map(d -> {
-                                return java.util.Map.of(
-                                        "donationId", d.getDonationId(),
-                                        "donorId", d.getDonorId(),
-                                        "screeningId", d.getScreeningId()
-
-                                );
-                            })
-                            .toList()
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        if (donation.getDonationDate() == null) {
+            donation.setDonationDate(LocalDate.now());
         }
+
+        if (donation.getDonationStatus() == null) {
+            donation.setDonationStatus(
+                    DonationStatus.COMPLETED
+            );
+        }
+
+        // --------------------------------------------------------
+        // 10. Save donation
+        // --------------------------------------------------------
+
+        Donation savedDonation =
+                donationRepository.save(donation);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(savedDonation);
     }
 
+    // ============================================================
+    // UPDATE DONATION
+    // ============================================================
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTION_STAFF')")
+    public ResponseEntity<?> updateDonation(
+            @PathVariable Long id,
+            @RequestBody Donation updatedDonation) {
+
+        Optional<Donation> optional =
+                donationRepository.findById(id);
+
+        if (optional.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Donation not found.");
+        }
+
+        Donation existing = optional.get();
+
+        if (updatedDonation.getUnitsCollected() == null ||
+                updatedDonation.getUnitsCollected() <= 0) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "Units collected must be greater than 0."
+                    );
+        }
+
+        existing.setUnitsCollected(
+                updatedDonation.getUnitsCollected()
+        );
+
+        if (updatedDonation.getDonationDate() != null) {
+            existing.setDonationDate(
+                    updatedDonation.getDonationDate()
+            );
+        }
+
+        if (updatedDonation.getDonationStatus() != null) {
+            existing.setDonationStatus(
+                    updatedDonation.getDonationStatus()
+            );
+        }
+
+        existing.setRemarks(
+                updatedDonation.getRemarks()
+        );
+
+        return ResponseEntity.ok(
+                donationRepository.save(existing)
+        );
+    }
+
+    // ============================================================
+    // DELETE DONATION
+    // ============================================================
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTION_STAFF')")
+    public ResponseEntity<?> deleteDonation(
+            @PathVariable Long id) {
+
+        if (!donationRepository.existsById(id)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Donation not found.");
+        }
+
+        donationRepository.deleteById(id);
+
+        return ResponseEntity.ok(
+                "Donation deleted successfully."
+        );
+    }
 }

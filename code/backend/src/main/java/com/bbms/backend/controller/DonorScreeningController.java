@@ -7,6 +7,7 @@ import com.bbms.backend.entity.DonorScreening;
 import com.bbms.backend.entity.DonorStatus;
 import com.bbms.backend.entity.ScreeningStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -26,26 +27,35 @@ public class DonorScreeningController {
         this.donorRepository = donorRepository;
     }
 
-    // ✅ CREATE
+    // CREATE
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @PostMapping("/{donorId}")
-    public ResponseEntity<?> addScreening(@PathVariable Long donorId,
-                                          @RequestBody DonorScreening screening) {
+    public ResponseEntity<?> addScreening(
+            @PathVariable Long donorId,
+            @RequestBody DonorScreening screening) {
 
         Donor donor = donorRepository.findById(donorId)
                 .orElseThrow(() -> new RuntimeException("Donor not found"));
 
         if (donor.getStatus() != DonorStatus.ACTIVE) {
-            return ResponseEntity.badRequest().body("Only ACTIVE donors can be screened.");
+            return ResponseEntity.badRequest()
+                    .body("Only ACTIVE donors can be screened.");
         }
 
         if (donor.getNextEligibleDate() != null &&
                 LocalDate.now().isBefore(donor.getNextEligibleDate())) {
+
             return ResponseEntity.badRequest()
-                    .body("Donor is not eligible for screening until " + donor.getNextEligibleDate());
+                    .body("Donor is not eligible for screening until "
+                            + donor.getNextEligibleDate());
         }
 
-        if (screening.getWeight() == null || screening.getHemoglobin() == null) {
-            return ResponseEntity.badRequest().body("Weight and hemoglobin are required.");
+        if (screening.getWeight() == null ||
+                screening.getHemoglobin() == null) {
+
+            return ResponseEntity.badRequest()
+                    .body("Weight and hemoglobin are required.");
         }
 
         if (screening.getScreeningDate() == null) {
@@ -54,23 +64,35 @@ public class DonorScreeningController {
 
         screening.setDonor(donor);
 
-        if (screening.getWeight() < 50 || screening.getHemoglobin() < 12.5) {
-            screening.setEligibilityStatus(ScreeningStatus.TEMPORARILY_DEFERRED);
+        if (screening.getWeight() < 50 ||
+                screening.getHemoglobin() < 12.5) {
+
+            screening.setEligibilityStatus(
+                    ScreeningStatus.TEMPORARILY_DEFERRED);
+
         } else {
-            screening.setEligibilityStatus(ScreeningStatus.ELIGIBLE);
+            screening.setEligibilityStatus(
+                    ScreeningStatus.ELIGIBLE);
         }
 
-        DonorScreening saved = screeningRepository.save(screening);
+        DonorScreening saved =
+                screeningRepository.save(screening);
+
         return ResponseEntity.ok(saved);
     }
 
-    // 🔥 ✅ ADD THIS (UPDATE METHOD)
+    // UPDATE
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateScreening(@PathVariable Long id,
-                                             @RequestBody DonorScreening updated) {
+    public ResponseEntity<?> updateScreening(
+            @PathVariable Long id,
+            @RequestBody DonorScreening updated) {
 
-        DonorScreening screening = screeningRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Screening not found"));
+        DonorScreening screening =
+                screeningRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException("Screening not found"));
 
         screening.setHemoglobin(updated.getHemoglobin());
         screening.setWeight(updated.getWeight());
@@ -80,40 +102,69 @@ public class DonorScreeningController {
         screening.setMedicalHistory(updated.getMedicalHistory());
         screening.setRemarks(updated.getRemarks());
 
-        if (screening.getWeight() < 50 || screening.getHemoglobin() < 12.5) {
-            screening.setEligibilityStatus(ScreeningStatus.TEMPORARILY_DEFERRED);
+        if (screening.getWeight() < 50 ||
+                screening.getHemoglobin() < 12.5 ||
+                screening.getTemperature() >= 37.5 ||
+                screening.getPulseRate() > 100) {
+
+            screening.setEligibilityStatus(
+                    ScreeningStatus.TEMPORARILY_DEFERRED);
+
         } else {
-            screening.setEligibilityStatus(ScreeningStatus.ELIGIBLE);
+            screening.setEligibilityStatus(
+                    ScreeningStatus.ELIGIBLE);
         }
 
-        return ResponseEntity.ok(screeningRepository.save(screening));
+        return ResponseEntity.ok(
+                screeningRepository.save(screening));
     }
-    // 🔥 ✅ ADD DELETE HERE
+
+    // DELETE
+    // ADMIN + LAB_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteScreening(@PathVariable Long id) {
+    public ResponseEntity<?> deleteScreening(
+            @PathVariable Long id) {
+
         screeningRepository.deleteById(id);
+
         return ResponseEntity.ok("Deleted successfully");
     }
-    // ✅ GET ALL
+
+    // GET ALL
+    // ADMIN + LAB_STAFF + RECEPTION_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'RECEPTION_STAFF')")
     @GetMapping
     public List<DonorScreening> getAllScreenings() {
         return screeningRepository.findAll();
     }
 
-    // ✅ GET BY ID
+    // GET BY ID
+    // ADMIN + LAB_STAFF + RECEPTION_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'RECEPTION_STAFF')")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getScreeningById(@PathVariable Long id) {
+    public ResponseEntity<?> getScreeningById(
+            @PathVariable Long id) {
+
         return screeningRepository.findById(id)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.badRequest().body("Screening not found"));
+                .orElseGet(() ->
+                        ResponseEntity.badRequest()
+                                .body("Screening not found"));
     }
 
-    // ✅ GET BY DONOR
+    // GET BY DONOR
+    // ADMIN + LAB_STAFF + RECEPTION_STAFF
+    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_STAFF', 'RECEPTION_STAFF')")
     @GetMapping("/donor/{donorId}")
-    public ResponseEntity<?> getScreeningsByDonor(@PathVariable Long donorId) {
-        Donor donor = donorRepository.findById(donorId)
-                .orElseThrow(() -> new RuntimeException("Donor not found"));
+    public ResponseEntity<?> getScreeningsByDonor(
+            @PathVariable Long donorId) {
 
-        return ResponseEntity.ok(screeningRepository.findByDonor(donor));
+        Donor donor = donorRepository.findById(donorId)
+                .orElseThrow(() ->
+                        new RuntimeException("Donor not found"));
+
+        return ResponseEntity.ok(
+                screeningRepository.findByDonor(donor));
     }
 }

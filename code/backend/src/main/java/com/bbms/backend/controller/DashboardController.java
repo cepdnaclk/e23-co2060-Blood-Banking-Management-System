@@ -7,6 +7,7 @@ import com.bbms.backend.entity.RequestStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -34,6 +35,7 @@ public class DashboardController {
     }
 
     // ================= MAIN DASHBOARD =================
+    @PreAuthorize("hasAnyRole('ADMIN','HOSPITAL_STAFF','LAB_STAFF','RECEPTION_STAFF')")
     @GetMapping
     public Map<String, Object> getDashboardData() {
 
@@ -73,6 +75,7 @@ public class DashboardController {
     }
 
     // ================= BAR CHART =================
+    @PreAuthorize("hasAnyRole('ADMIN','HOSPITAL_STAFF','LAB_STAFF','RECEPTION_STAFF')")
     @GetMapping("/inventory-by-group")
     public List<Map<String, Object>> getInventoryByGroup() {
 
@@ -90,6 +93,7 @@ public class DashboardController {
     }
 
     // ================= PIE CHART =================
+    @PreAuthorize("hasAnyRole('ADMIN','HOSPITAL_STAFF','LAB_STAFF','RECEPTION_STAFF')")
     @GetMapping("/donor-status")
     public List<Map<String, Object>> getDonorStatus() {
 
