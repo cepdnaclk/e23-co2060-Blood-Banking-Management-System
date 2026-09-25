@@ -13,7 +13,7 @@ function CheckStatus() {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/api/public/donors/status/${nic}`
+        `https://backend-production-b77da.up.railway.app/api/public/donors/status/${nic}`
       );
 
       const data = await res.text();
