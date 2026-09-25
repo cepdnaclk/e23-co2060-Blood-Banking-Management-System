@@ -1,10 +1,12 @@
 package com.bbms.backend.entity;
 
-import jakarta.persistence.*;
-import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "donations")
 public class Donation {
@@ -13,20 +15,18 @@ public class Donation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long donationId;
 
-   // add at top
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "donor_id", nullable = false)
     @JsonIgnore
     private Donor donor;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "screening_id", unique = true)
+    @JoinColumn(name = "screening_id", unique = true, nullable = false)
     @JsonIgnore
     private DonorScreening screening;
 
-
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @Column(nullable = false)
     private LocalDate donationDate;
 
     @Column(nullable = false)
@@ -38,15 +38,20 @@ public class Donation {
 
     private String remarks;
 
-    public Donation() {}
+    public Donation() {
+    }
 
     @PrePersist
     protected void onCreate() {
-        this.donationDate = LocalDate.now();
-    }
 
-    // getters & setters
-    // GETTERS & SETTERS
+        if (donationDate == null) {
+            donationDate = LocalDate.now();
+        }
+
+        if (donationStatus == null) {
+            donationStatus = DonationStatus.COMPLETED;
+        }
+    }
 
     public Long getDonationId() {
         return donationId;
@@ -67,17 +72,23 @@ public class Donation {
     public DonorScreening getScreening() {
         return screening;
     }
-    public Long getDonorId() {
-        return donor != null ? donor.getDonorId(): null;
-    }
-
-    public Long getScreeningId() {
-        return screening != null ? screening.getScreeningId() : null;
-    }
-
 
     public void setScreening(DonorScreening screening) {
         this.screening = screening;
+    }
+
+    @JsonProperty("donorId")
+    public Long getDonorId() {
+        return donor != null
+                ? donor.getDonorId()
+                : null;
+    }
+
+    @JsonProperty("screeningId")
+    public Long getScreeningId() {
+        return screening != null
+                ? screening.getScreeningId()
+                : null;
     }
 
     public LocalDate getDonationDate() {
