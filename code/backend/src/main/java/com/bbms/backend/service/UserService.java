@@ -2,6 +2,7 @@ package com.bbms.backend.service;
 
 import com.bbms.backend.Repository.UserRepository;
 import com.bbms.backend.entity.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,9 +11,11 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository repo;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repo) {
+    public UserService(UserRepository repo, PasswordEncoder passwordEncoder) {
         this.repo = repo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAll() {
@@ -29,6 +32,9 @@ public class UserService {
 
         validateHospital(user);
 
+        // Hash password before saving
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         User saved = repo.save(user);
         saved.setPassword(null);
         return saved;
@@ -43,7 +49,8 @@ public class UserService {
         user.setEmail(updated.getEmail());
 
         if (updated.getPassword() != null && !updated.getPassword().isEmpty()) {
-            user.setPassword(updated.getPassword());
+            // Hash updated password
+            user.setPassword(passwordEncoder.encode(updated.getPassword()));
         }
 
         user.setRole(updated.getRole());
@@ -64,7 +71,6 @@ public class UserService {
         repo.deleteById(id);
     }
 
-    // 🔥 RULE
     private void validateHospital(User user) {
         if ((user.getRole().name().equals("HOSPITAL_STAFF") ||
                 user.getRole().name().equals("RECEPTION_STAFF"))

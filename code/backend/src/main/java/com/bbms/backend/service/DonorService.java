@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.regex.Pattern;
+import java.util.List;
 
 @Service
 public class DonorService {
@@ -82,5 +83,9 @@ public class DonorService {
         return repo.findByNic(nic)
                 .map(d -> d.getStatus().name())
                 .orElse("NOT_REGISTERED");
+    }
+
+    public List<Donor> getAllDonors() {
+        return repo.findAll();
     }
 }
