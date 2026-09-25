@@ -1,8 +1,13 @@
 package com.bbms.backend.controller;
 
+import com.bbms.backend.Repository.UserRepository;
+import com.bbms.backend.dto.LoginRequest;
+import com.bbms.backend.dto.LoginResponse;
 import com.bbms.backend.entity.User;
-import com.bbms.backend.service.AuthService;
+import com.bbms.backend.security.JwtService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -10,21 +15,45 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthController(AuthenticationManager authenticationManager,
+                          JwtService jwtService,
+                          UserRepository userRepository) {
+
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+
         try {
-            User user = authService.login(
-                    request.getEmail(),
-                    request.getPassword()
+
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
             );
 
-            return ResponseEntity.ok(user);
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow();
+
+            String token = jwtService.generateToken(user.getEmail());
+
+            LoginResponse response = new LoginResponse(
+                    token,
+                    user.getUserId(),
+                    user.getFullName(),
+                    user.getEmail(),
+                    user.getRole().name()
+            );
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

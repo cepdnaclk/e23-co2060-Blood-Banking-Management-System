@@ -3,13 +3,12 @@ package com.bbms.backend.controller;
 import com.bbms.backend.Repository.DonorRepository;
 import com.bbms.backend.entity.Donor;
 import com.bbms.backend.entity.DonorStatus;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/admin/donors")
@@ -22,27 +21,10 @@ public class AdminDonorController {
         this.donorRepo = donorRepo;
     }
 
-    // ✅ CENTRAL ROLE CHECK (UPDATED)
-    private boolean isAuthorized(String role) {
-        if (role == null) return false;
-
-        role = role.trim().toUpperCase();
-
-        return Set.of(
-                "ADMIN",
-                "HOSPITAL_STAFF",
-                "RECEPTION_STAFF"
-        ).contains(role);
-    }
-
-    // ✅ 1. GET PENDING DONORS
+    // ✅ Get Pending Donors
+    @PreAuthorize("hasAnyRole('ADMIN','HOSPITAL_STAFF','RECEPTION_STAFF')")
     @GetMapping("/pending")
-    public ResponseEntity<?> getPendingDonors(
-            @RequestHeader(value = "role", required = false) String role) {
-
-        if (!isAuthorized(role)) {
-            return ResponseEntity.status(403).body("Access Denied");
-        }
+    public ResponseEntity<?> getPendingDonors() {
 
         List<Donor> donors =
                 donorRepo.findByStatus(DonorStatus.PENDING_VERIFICATION);
@@ -50,15 +32,10 @@ public class AdminDonorController {
         return ResponseEntity.ok(donors);
     }
 
-    // ✅ 2. APPROVE DONOR
+    // ✅ Approve Donor
+    @PreAuthorize("hasAnyRole('ADMIN','HOSPITAL_STAFF','RECEPTION_STAFF')")
     @PutMapping("/approve/{id}")
-    public ResponseEntity<?> approveDonor(
-            @PathVariable Long id,
-            @RequestHeader(value = "role", required = false) String role) {
-
-        if (!isAuthorized(role)) {
-            return ResponseEntity.status(403).body("Access Denied");
-        }
+    public ResponseEntity<?> approveDonor(@PathVariable Long id) {
 
         Donor donor = donorRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Donor not found"));
@@ -71,16 +48,12 @@ public class AdminDonorController {
         return ResponseEntity.ok("Donor Approved Successfully");
     }
 
-    // ✅ 3. REJECT DONOR
+    // ✅ Reject Donor
+    @PreAuthorize("hasAnyRole('ADMIN','HOSPITAL_STAFF','RECEPTION_STAFF')")
     @PutMapping("/reject/{id}")
     public ResponseEntity<?> rejectDonor(
             @PathVariable Long id,
-            @RequestBody(required = false) String reason,
-            @RequestHeader(value = "role", required = false) String role) {
-
-        if (!isAuthorized(role)) {
-            return ResponseEntity.status(403).body("Access Denied");
-        }
+            @RequestBody(required = false) String reason) {
 
         Donor donor = donorRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Donor not found"));
