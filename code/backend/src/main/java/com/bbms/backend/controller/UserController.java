@@ -3,6 +3,7 @@ package com.bbms.backend.controller;
 import com.bbms.backend.entity.User;
 import com.bbms.backend.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,12 +19,16 @@ public class UserController {
         this.service = service;
     }
 
+    // ADMIN ONLY
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<User> getAll() {
         return service.getAll();
     }
 
+    // ADMIN ONLY
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> create(@RequestBody User user) {
         try {
             return ResponseEntity.ok(service.create(user));
@@ -32,8 +37,13 @@ public class UserController {
         }
     }
 
+    // ADMIN ONLY
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody User user) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> update(
+            @PathVariable Long id,
+            @RequestBody User user) {
+
         try {
             return ResponseEntity.ok(service.update(id, user));
         } catch (Exception e) {
@@ -41,7 +51,9 @@ public class UserController {
         }
     }
 
+    // ADMIN ONLY
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
             service.delete(id);
