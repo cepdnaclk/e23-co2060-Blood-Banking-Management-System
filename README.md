@@ -69,7 +69,7 @@ flowchart TB
     A --> D["🧪 Laboratory Staff"]
     A --> E["🏥 Hospital Staff"]
 
- **🔑 Role-Based Permissions**
+ 
 
 | **Role** | **Main Responsibilities & System Permissions** |
 | :--- | :--- |
