@@ -530,3 +530,21 @@ Below is a summary of the core REST API endpoints implemented in the backend app
 | `GET` | `/api/alerts` | Get active stock & expiry alerts | All Roles |
 | `GET` | `/api/audit-logs` | Fetch system audit trail records | Admin Only |
 
+## 🧪 Testing
+
+The codebase includes testing configurations for both frontend and backend verification:
+
+### Backend Testing (Spring Boot)
+Backend tests are powered by **Spring Boot Test** (`spring-boot-starter-test`):
+- Run unit and integration tests using Maven:
+  ```bash
+  ./mvnw test
+  ```
+
+### Frontend Testing (React)
+Frontend test suites utilize **Jest** and **React Testing Library**:
+- Run frontend interactive test runner:
+  ```bash
+  npm test
+  ```
+  
