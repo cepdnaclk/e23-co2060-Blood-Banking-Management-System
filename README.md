@@ -75,6 +75,7 @@ The system implements strict **Role-Based Access Control (RBAC)** via **Spring S
 └─────────────────┘ └──────────────────┘ └──────────────────┘ └─────────────────┘
       ADMIN          RECEPTION_STAFF        LAB_STAFF          HOSPITAL_STAFF
  
+```
 
 | **Role** | **Main Responsibilities & System Permissions** |
 | :--- | :--- |
