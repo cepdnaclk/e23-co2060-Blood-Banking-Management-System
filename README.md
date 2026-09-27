@@ -164,5 +164,61 @@ The Blood Bank Management System is composed of integrated modules that support 
   - Inventory distribution by blood group
   - Donor status statistics
 - **Audit Logging:** The `/api/audit-logs` endpoint maintains a system-wide activity trail to record relevant user and administrative actions.
+## 🔄 System Workflows
+
+### Donor Registration to Usable Inventory Workflow
+
+```mermaid
+flowchart TD
+    A[Public Donor Registration] -->|Status: PENDING_VERIFICATION| B[Admin Review & Verification]
+    B -->|Approved| C[Donor Status: ACTIVE]
+    B -->|Rejected| D[Donor Status: REJECTED]
+    C --> E[Pre-Donation Screening Check]
+    E -->|Weight >= 50kg, Hb >= 12.5| F[Screening: ELIGIBLE]
+    E -->|Metrics Below Threshold| G[Screening: TEMPORARILY_DEFERRED]
+    F --> H[Record Blood Donation]
+    H --> I[Laboratory Infectious Disease Screening]
+    I -->|HIV, HBV, HCV, Syphilis, Malaria NEGATIVE| J[Overall Result: SAFE]
+    I -->|Any Test POSITIVE| K[Overall Result: UNSAFE - Unit Discarded]
+    J --> L[Blood Component Processing]
+    L --> M[Auto-Calculate Expiry Date]
+    M --> N[Sync to Usable Blood Inventory]
+```
+
+### Hospital Blood Request & Issuing Workflow
+
+```mermaid
+flowchart TD
+    A[Hospital Staff Logs Blood Request] --> B{Urgency Level?}
+    B -->|EMERGENCY| C[Trigger System Emergency Alert]
+    B -->|ROUTINE / URGENT| D[Status: PENDING]
+    C --> D
+    D --> E[Administrator Review]
+    E -->|Reject| F[Status: REJECTED]
+    E -->|Approve| G[Status: APPROVED]
+    G --> H[Admin Executes Blood Issue]
+    H --> I{Sufficient Stock Available?}
+    I -->|No| J[Issue Failed - Low Stock Alert]
+    I -->|Yes| K[Create Blood Issue Record]
+    K --> L[Deduct Units from Inventory Stock]
+    L --> M[Fulfillment Complete]
+```
+
+## 🛠️ Technology Stack
+
+| Layer | Technology | Version | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Frontend Framework** | React | `^19.2.5` | User Interface & Single-Page Application (SPA) architecture |
+| **Routing** | React Router DOM | `^7.14.2` | Client-side routing with role-based route guards |
+| **Data Visualization** | Recharts | `^3.8.1` | Dashboard metrics, inventory bar charts, pie charts |
+| **HTTP Client** | Fetch API (`api.js`) | Native | Centralized API utility with automatic Bearer token headers |
+| **Backend Framework** | Spring Boot | `3.5.11` | Application backend framework & dependency injection |
+| **Language** | Java | `21` | Core backend programming language (LTS) |
+| **Security & Auth** | Spring Security + JJWT | `0.12.7` | Stateless JWT authentication & role-based authorization |
+| **Data Persistence** | Spring Data JPA / Hibernate | 3.x | Object-Relational Mapping (ORM) and data repositories |
+| **Database** | MySQL | `8.x` | Production relational database for persistent storage |
+| **Utility Libraries** | Lombok | Included | Code boilerplate reduction (`@Getter`, `@Setter`, etc.) |
+| **Build Tools** | Apache Maven / npm | Maven 3.x / Node 20+ | Backend and frontend build automation & package management |
+| **Hosting & Cloud** | Railway & Vercel | Production Cloud | Cloud deployment platform for Spring Boot API, MySQL, and React SPA |
 
 
