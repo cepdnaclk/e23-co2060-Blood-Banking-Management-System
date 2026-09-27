@@ -57,14 +57,11 @@ Enforce Safety & Compliance: Require mandatory laboratory testing for five major
 | **Audit Logging** | Maintains administrative logs of system activities, record modifications, and user actions to support accountability, traceability, and regulatory requirements. |
 
 
-
 ## 👥 User Roles
 
 The system implements strict **Role-Based Access Control (RBAC)** using **Spring Security** annotations and React route guards (`ProtectedRoute`). Each authenticated user is granted access according to their assigned role.
 
-## 👥 User Roles
-
-The system implements strict **Role-Based Access Control (RBAC)** using **Spring Security** annotations and React route guards (`ProtectedRoute`). Each authenticated user is granted access according to their assigned role.
+### 🔐 Role-Based Access Architecture
 
 ```mermaid
 flowchart TB
