@@ -221,4 +221,58 @@ flowchart TD
 | **Build Tools** | Apache Maven / npm | Maven 3.x / Node 20+ | Backend and frontend build automation & package management |
 | **Hosting & Cloud** | Railway & Vercel | Production Cloud | Cloud deployment platform for Spring Boot API, MySQL, and React SPA |
 
+## 🏗️ System Architecture
+
+The application follows a standard **Tiered Web Architecture** with decoupled presentation and application layers communicating via RESTful JSON APIs.
+
+```mermaid
+flowchart TB
+    subgraph Client Layer ["Client Layer (Presentation)"]
+        UI["React 19 SPA (Vercel)"]
+        Router["React Router DOM (Protected Routes)"]
+        Chart["Recharts Dashboard Views"]
+    end
+
+    subgraph API & Security Layer ["Application Layer (Spring Boot 3 - Railway)"]
+        CORS["CORS Policy Configuration"]
+        Security["Spring Security Filter Chain"]
+        JWT["JWT Authentication Filter"]
+        
+        subgraph Controllers ["REST Controllers (/api/*)"]
+            AuthCtrl["AuthController"]
+            UserCtrl["UserController"]
+            DonorCtrl["Admin / Public / Donor Controllers"]
+            ScreenCtrl["DonorScreeningController"]
+            DonationCtrl["DonationController"]
+            TestCtrl["BloodTestController"]
+            CompCtrl["BloodComponentController"]
+            InvCtrl["InventoryController"]
+            ReqCtrl["BloodRequestController"]
+            IssueCtrl["BloodIssueController"]
+            AlertCtrl["AlertController"]
+            ReportCtrl["ReportController"]
+        end
+        
+        subgraph Services ["Business Logic Layer"]
+            UserService["UserService"]
+            DonorService["DonorService"]
+            AlertService["AlertService"]
+            ReportService["ReportService"]
+            HospitalService["HospitalService"]
+        end
+    end
+
+    subgraph Data Layer ["Database Layer (MySQL - Railway)"]
+        JPA["Spring Data JPA Repositories"]
+        DB[("MySQL Relational Database")]
+    end
+
+    UI -->|HTTP Requests / REST API| CORS
+    CORS --> Security
+    Security --> JWT
+    JWT --> Controllers
+    Controllers --> Services
+    Services --> JPA
+    JPA --> DB
+```
 
