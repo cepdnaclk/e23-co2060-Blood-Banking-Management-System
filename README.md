@@ -79,34 +79,90 @@ flowchart TB
 | 🏥 **Hospital Staff** (`HOSPITAL_STAFF`) | Views hospital information, submits routine and emergency blood requests, tracks request approval and issuance status, checks real-time blood inventory availability, and views relevant alerts. |
 | 🌐 **Public Access** *(Unauthenticated)* | Allows prospective donors to register online through `/register` and check their registration verification status using NIC or email through `/status`. |
 
-## 🛠️ Tech Stack
+## 🧩 System Modules
 
-| Component | Technology | Description |
-|----------|-----------|------------|
-| Frontend | ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) | Interactive UI |
-| Backend | ![Spring Boot](https://img.shields.io/badge/SpringBoot-6DB33F?style=flat-square&logo=springboot&logoColor=white) | REST API |
-| Database | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white) | Data storage |
-| API | REST | Communication |
+The Blood Bank Management System is composed of integrated modules that support the complete blood bank workflow, from secure authentication and donor registration to blood screening, component processing, inventory management, hospital requests, blood issuance, analytics, and auditing.
 
----
+### 1. Authentication & User Management
 
-## 🏗️ Architecture
+- **Security:** JWT token-based authentication is implemented through `POST /api/auth/login`.
+- **User Management:** Administrators can create, update, deactivate, and delete user accounts through the admin-protected `/api/users` endpoint.
+- **Role Assignment:** User accounts can be assigned the following roles: `ADMIN`, `RECEPTION_STAFF`, `LAB_STAFF`, and `HOSPITAL_STAFF`.
 
-- Frontend (React): UI and user interactions  
-- Backend (Spring Boot): Business logic  
-- Database (MySQL): Data storage  
+### 2. Donor Management
 
----
+- **Public Portal:** Prospective donors can register through `POST /api/public/donors` and check their registration status through `GET /api/public/donors/status/{nic}`.
+- **Administrative Approval:** Administrators can review pending registrations through `/api/admin/donors/pending` and approve (`ACTIVE`) or reject (`REJECTED`) prospective donors, with rejection reasons recorded where applicable.
+- **Donor Directory:** Authorized staff can list, search, and manage registered donor records through `/api/donor-management`.
 
-## 🚀 Getting Started
+### 3. Donor Screening
 
-### Prerequisites
-- React.js & npm  
-- Java (JDK 17+)  
-- MySQL  
+- **Pre-Donation Screening:** Screening records are managed through `/api/screenings` based on predefined physical eligibility criteria:
+  - **Weight:** Must be `≥ 50 kg`
+  - **Hemoglobin:** Must be `≥ 12.5 g/dL`
+  - **Temperature:** Must be `< 37.5 °C`
+  - **Pulse Rate:** Must be `≤ 100 bpm`
+- **Automatic Eligibility Assessment:** Based on the screening criteria, the system automatically assigns either `ELIGIBLE` or `TEMPORARILY_DEFERRED`.
 
-### Clone Repository
-```bash
-git clone https://github.com/cepdnaclk/e23-co2060-Blood-Banking-Management-System.git
-cd e23-co2060-Blood-Banking-Management-System
-# e23-co2060-Blood-Banking-Management-System
+### 4. Donation Management
+
+- **Donation Recording:** Blood collection records are created through `POST /api/donations/{donorId}/{screeningId}`.
+- **Validation:** The system verifies that the donor is `ACTIVE` and that the associated screening status is `ELIGIBLE`.
+- **Duplicate Prevention:** The system prevents duplicate donation records for the same screening event.
+
+### 5. Laboratory Testing
+
+- **Laboratory Test Entry:** Blood test results are recorded through `/api/blood-tests` for five mandatory disease panels:
+  - HIV
+  - Hepatitis B
+  - Hepatitis C
+  - Malaria
+  - Syphilis
+- **Automated Safety Assessment:** The overall blood safety status is calculated according to the following rules:
+  - If **any** test result is `POSITIVE` → Overall result = `UNSAFE`
+  - If no test is positive but **any** test result is `PENDING` → Overall result = `PENDING`
+  - If **all** test results are `NEGATIVE` → Overall result = `SAFE`
+
+### 6. Blood Component Processing & Inventory Synchronization
+
+- **Component Creation:** Blood components are created through `/api/components` and are restricted to donations with a verified `SAFE` blood test result.
+- **Automatic Shelf-Life Calculation:** The system calculates component expiration dates based on the collection date.
+
+| **Blood Component** | **Shelf Life** |
+| :--- | :--- |
+| `RBC` (Red Blood Cells) | Collection Date + 42 Days |
+| `PLASMA` | Collection Date + 365 Days |
+| `PLATELETS` | Collection Date + 5 Days |
+| `CRYOPRECIPITATE` | Collection Date + 365 Days |
+| `WHOLE_BLOOD` | Collection Date + 35 Days |
+
+- **Inventory Synchronization:** Upon successful component creation, the corresponding component is automatically inserted into the `inventory` table.
+
+### 7. Hospital Management & Blood Requests
+
+- **Hospital Registration:** Partner hospitals can be registered through `/api/hospitals`.
+- **Blood Requests:** Hospital staff can create blood requests through `/api/requests` with the urgency levels `ROUTINE`, `URGENT`, and `EMERGENCY`.
+- **Emergency Alerts:** Submitting an `EMERGENCY` request automatically triggers an immediate system alert.
+- **Administrative Review:** Blood requests follow a controlled workflow:
+
+`PENDING` → `APPROVED` / `REJECTED`
+
+### 8. Blood Issue & Inventory Deduction
+
+- **Blood Issuance:** Approved hospital requests are processed through `POST /api/blood-issues`.
+- **Stock Matching:** The system matches approved requests against available blood inventory.
+- **Automatic Stock Deduction:** Before issuing blood, the system validates the available quantity and automatically deducts the issued units from the relevant `inventory` records.
+
+### 9. System Alerts, Dashboard Analytics & Audit Logs
+
+- **Expiry Alerts:** Automated background checks identify blood units approaching their expiration dates through `/api/alerts`.
+- **Dashboard Analytics:** The `/api/dashboard` endpoint provides key operational metrics, including:
+  - Total donors
+  - Pending donor approvals
+  - Total blood units
+  - Pending blood requests
+  - Inventory distribution by blood group
+  - Donor status statistics
+- **Audit Logging:** The `/api/audit-logs` endpoint maintains a system-wide activity trail to record relevant user and administrative actions.
+
+
