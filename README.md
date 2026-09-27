@@ -572,4 +572,31 @@ The system is configured for cloud deployment across the following platforms:
 | **Infectious Disease Safety Guarantee** | Preventing contaminated blood from being added to usable stock. Enforced a strict validation constraint in component processing requiring a verified `SAFE` composite test result (all 5 disease panels negative) before any component creation is allowed. |
 | **Transactional Inventory Deductions** | Race conditions during simultaneous hospital request fulfillment. Implemented atomic inventory lookups and quantity reductions inside `@Transactional` service blocks in `BloodIssueController`. |
 | **Emergency Priority Alerts** | Critical blood requests require immediate visibility. Implemented automated alert hooks inside `BloodRequestController` that detect `EMERGENCY` urgency flags and dynamically write urgent alert records to the `alerts` repository. |
- 
+
+ ## 🔮 Future Enhancements
+
+- 📱 **Mobile Application:** Native mobile application for blood donors to schedule donation appointments and view donation history.
+- 📧 **Automated SMS/Email Notifications:** Dispatch automated alerts to registered donors when their blood group inventory drops below critical thresholds.
+- 🤖 **Predictive Demand Forecasting:** Machine learning algorithms to forecast seasonal blood shortages based on historical hospital request patterns.
+- 🗺️ **Multi-Bank Regional Network:** Expand multi-tenancy support to interconnect multiple regional blood banks across Sri Lanka.
+
+  ## 👩‍💻 Team — CodeCrush
+
+| Index No. | Name | Email |
+| :--- | :--- | :--- |
+| `[E/23/157]` | **[J.SIVAPRIYA]**| e23157@eng.pdn.ac.lk |
+| `[E/23/162]` | **[K.HETHARANI]** | e23162@eng.pdn.ac.lk |
+| `[E/23/011]` | **[P.AKSHAYAA]** | e23011@eng.pdn.ac.lk |
+| `[E/23/411]` | **[W.CHAVINDI]** | e23411@eng.pdn.ac.lk |
+
+
+## 🎓 Academic Context
+
+**Institution:** University of Peradeniya  
+**Faculty:** Faculty of Engineering  
+**Department:** Department of Computer Engineering  
+**Course:** Second-Year Computer Engineering Project  
+**Team:** CodeCrush  
+
+This software project was developed in partial fulfillment of the requirements for the **Degree of Bachelor of Science Honours in Computer Engineering** at the **University of Peradeniya, Sri Lanka**.
+
