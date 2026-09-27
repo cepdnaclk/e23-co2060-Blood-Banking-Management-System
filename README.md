@@ -547,4 +547,29 @@ Frontend test suites utilize **Jest** and **React Testing Library**:
   ```bash
   npm test
   ```
+ ## ☁️ Deployment
+
+The system is configured for cloud deployment across the following platforms:
+
+```
+┌───────────────────────────┐      ┌───────────────────────────┐      ┌───────────────────────────┐
+│     React Frontend        │      │    Spring Boot Backend    │      │      MySQL Database       │
+│     Hosted on Vercel      ├─────►│     Hosted on Railway     ├─────►│     Hosted on Railway     │
+│  (Single Page App - SPA)  │ REST │ (Java 21 / Spring Boot 3) │ SQL  │   (Cloud Database Instance)│
+└───────────────────────────┘      └───────────────────────────┘      └───────────────────────────┘
+```
+
+- **Backend Service:** Deployed on **Railway** cloud hosting running Java 21 environment.
+- **Production API URL:** `https://backend-production-b77da.up.railway.app`
+- **Database:** Managed **MySQL** instance hosted on Railway with automated table initialization via Hibernate (`spring.jpa.hibernate.ddl-auto=update`).
+- **Frontend SPA:** Built using `react-scripts build` and hosted on **Vercel**.
   
+## 🧠 Technical Challenges & Solutions
+
+| Technical Challenge | Engineering Solution Implemented |
+| :--- | :--- |
+| **Component Expiry Variance** | Different blood components have vastly different shelf lives (e.g., Platelets expire in 5 days, while Plasma lasts 365 days). Implemented automated date utility functions in `BloodComponentController` that assign exact expiration dates upon component entry. |
+| **Infectious Disease Safety Guarantee** | Preventing contaminated blood from being added to usable stock. Enforced a strict validation constraint in component processing requiring a verified `SAFE` composite test result (all 5 disease panels negative) before any component creation is allowed. |
+| **Transactional Inventory Deductions** | Race conditions during simultaneous hospital request fulfillment. Implemented atomic inventory lookups and quantity reductions inside `@Transactional` service blocks in `BloodIssueController`. |
+| **Emergency Priority Alerts** | Critical blood requests require immediate visibility. Implemented automated alert hooks inside `BloodRequestController` that detect `EMERGENCY` urgency flags and dynamically write urgent alert records to the `alerts` repository. |
+ 
