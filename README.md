@@ -476,3 +476,57 @@ REACT_APP_API_BASE_URL=https://backend-production-b77da.up.railway.app
 ```
 
 > ⚠️ **SECURITY WARNING:** Never commit actual database passwords, secret keys, or `.env` files to public version control repositories.
+
+## 📡 API Documentation
+
+Below is a summary of the core REST API endpoints implemented in the backend application.
+
+### 🔑 Authentication (`/api/auth`)
+| Method | Endpoint | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/login` | Authenticate user & return JWT token | Public |
+
+### 🧑🩸 Donors (`/api/public/donors`, `/api/admin/donors`, `/api/donor-management`)
+| Method | Endpoint | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/public/donors` | Submit public donor registration | Public |
+| `GET` | `/api/public/donors/status/{nic}` | Check registration status by NIC | Public |
+| `GET` | `/api/admin/donors/pending` | Fetch pending donor approvals | Admin, Reception, Hospital |
+| `PUT` | `/api/admin/donors/approve/{id}` | Approve registered donor (`ACTIVE`) | Admin, Reception, Hospital |
+| `PUT` | `/api/admin/donors/reject/{id}` | Reject registered donor | Admin, Reception, Hospital |
+| `GET` | `/api/donor-management` | Fetch full donor directory | Admin, Lab, Reception |
+
+### 🩺 Screening & Donations (`/api/screenings`, `/api/donations`)
+| Method | Endpoint | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/screenings/{donorId}` | Record donor pre-screening health check | Admin, Lab Staff |
+| `GET` | `/api/screenings` | Retrieve all donor screening records | Admin, Lab, Reception |
+| `POST` | `/api/donations/{donorId}/{screeningId}` | Record a blood donation collection | Admin, Reception Staff |
+| `GET` | `/api/donations` | Fetch all recorded blood donations | Admin, Lab, Reception |
+
+### 🧪 Laboratory Testing & Components (`/api/blood-tests`, `/api/components`)
+| Method | Endpoint | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/blood-tests` | Save disease test results (HIV, HBV, HCV, etc.) | Admin, Lab Staff |
+| `GET` | `/api/blood-tests` | Retrieve lab screening test entries | Admin, Lab Staff |
+| `POST` | `/api/components` | Process blood into components & sync inventory | Admin, Lab Staff |
+| `GET` | `/api/components` | Retrieve blood component records | All Roles |
+
+### 🩸 Inventory & Requests (`/api/inventory`, `/api/requests`, `/api/blood-issues`)
+| Method | Endpoint | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/inventory` | View current blood stock levels | All Roles |
+| `GET` | `/api/inventory/group/{group}` | Filter stock by blood group | All Roles |
+| `POST` | `/api/requests` | Submit hospital blood request | Admin, Hospital Staff |
+| `PUT` | `/api/requests/{id}/approve` | Approve a pending blood request | Admin Only |
+| `PUT` | `/api/requests/{id}/reject` | Reject a pending blood request | Admin Only |
+| `POST` | `/api/blood-issues` | Issue blood & deduct inventory quantity | Admin Only |
+
+### 📊 Dashboard & System (`/api/dashboard`, `/api/alerts`, `/api/audit-logs`)
+| Method | Endpoint | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/dashboard` | Fetch summary operational KPIs | All Roles |
+| `GET` | `/api/dashboard/inventory-by-group` | Bar chart data for stock breakdown | All Roles |
+| `GET` | `/api/alerts` | Get active stock & expiry alerts | All Roles |
+| `GET` | `/api/audit-logs` | Fetch system audit trail records | Admin Only |
+
