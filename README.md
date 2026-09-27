@@ -63,18 +63,12 @@ The system implements strict **Role-Based Access Control (RBAC)** via **Spring S
 
 ### 🔐 Authentication & Role Structure
 
-```text
-                              ┌───────────────────────────┐
-                              │      Authentication       │
-                              └─────────────┬─────────────┘
-                                            │
-         ┌───────────────────┬──────────────┼───────────────┬───────────────────┐
-         ▼                   ▼              ▼               ▼
-┌─────────────────┐ ┌──────────────────┐ ┌──────────────────┐ ┌─────────────────┐
-│  Administrator  │ │  Reception Staff │ │ Laboratory Staff │ │ Hospital Staff  │
-└─────────────────┘ └──────────────────┘ └──────────────────┘ └─────────────────┘
-      ADMIN          RECEPTION_STAFF        LAB_STAFF          HOSPITAL_STAFF
- 
+```mermaid
+flowchart TB
+    A["🔐 Authentication"] --> B["👨‍💼 Administrator"]
+    A --> C["🧑‍💻 Reception Staff"]
+    A --> D["🧪 Laboratory Staff"]
+    A --> E["🏥 Hospital Staff"]
 ```
 
 | **Role** | **Main Responsibilities & System Permissions** |
