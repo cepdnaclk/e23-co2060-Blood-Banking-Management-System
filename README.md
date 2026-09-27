@@ -275,4 +275,204 @@ flowchart TB
     Services --> JPA
     JPA --> DB
 ```
+## 📂 Project Structure
 
+```text
+blood-bank-management-system/
+├── backend/                                  # Spring Boot 3 Java Backend
+│   ├── mvnw                                  # Maven Wrapper (Unix)
+│   ├── mvnw.cmd                              # Maven Wrapper (Windows)
+│   ├── pom.xml                               # Maven Project Object Model & Dependencies
+│   └── src/
+│       ├── main/
+│       │   ├── java/com/bbms/backend/
+│       │   │   ├── BackendApplication.java   # Spring Boot Entry Point
+│       │   │   ├── PasswordGenerator.java   # Utility Password Hashing Script
+│       │   │   ├── config/                   # Security, CORS, and Password Encoder Config
+│       │   │   │   ├── CorsConfig.java
+│       │   │   │   ├── PasswordConfig.java
+│       │   │   │   └── SecurityConfig.java
+│       │   │   ├── controller/               # REST API Controllers (17 Endpoints)
+│       │   │   │   ├── AdminDonorController.java
+│       │   │   │   ├── AlertController.java
+│       │   │   │   ├── AuditLogController.java
+│       │   │   │   ├── AuthController.java
+│       │   │   │   ├── BloodComponentController.java
+│       │   │   │   ├── BloodIssueController.java
+│       │   │   │   ├── BloodRequestController.java
+│       │   │   │   ├── BloodTestController.java
+│       │   │   │   ├── DashboardController.java
+│       │   │   │   ├── DonationController.java
+│       │   │   │   ├── DonorManagementController.java
+│       │   │   │   ├── DonorScreeningController.java
+│       │   │   │   ├── HospitalController.java
+│       │   │   │   ├── InventoryController.java
+│       │   │   │   ├── PublicDonorController.java
+│       │   │   │   ├── ReportController.java
+│       │   │   │   └── UserController.java
+│       │   │   ├── dto/                      # Data Transfer Objects (Requests/Responses)
+│       │   │   ├── entity/                   # JPA Database Entities & Enums
+│       │   │   ├── Repository/               # Spring Data JPA Repository Interfaces
+│       │   │   ├── security/                 # JWT Authentication Filters & Services
+│       │   │   └── service/                  # Business Logic Service Layer
+│       │   └── resources/
+│       │       └── application.properties    # Application & MySQL Railway Configuration
+│       └── test/                             # Backend Unit & Integration Tests
+│
+├── blood-bank-frontend/                      # React 19 Frontend Application
+│   ├── package.json                          # Node Dependencies & Scripts
+│   ├── public/                               # Static Web Assets
+│   └── src/
+│       ├── api.js                            # API Utility & Centralized Fetch Handler
+│       ├── App.js                            # React Router Application Routes
+│       ├── ProtectedRoute.js                 # Role & Token Route Protection Guard
+│       ├── roleConfig.js                     # Access Permissions Mapping Matrix
+│       ├── AdminApproval.js                  # Admin Donor Verification Page
+│       ├── AlertsPage.jsx                    # System Alerts & Expiry Monitoring
+│       ├── AuditLogPage.jsx                  # Admin Activity Audit Log Page
+│       ├── BloodComponentPage.js             # Blood Component Separation View
+│       ├── BloodIssuePage.js                 # Hospital Blood Issuing View
+│       ├── BloodRequestPage.js               # Blood Request Management View
+│       ├── BloodTestingPage.js               # Laboratory Screening Test View
+│       ├── CheckStatus.js                    # Public Donor Status Search Page
+│       ├── Dashboard.jsx                     # Interactive Analytics Dashboard
+│       ├── DonationPage.js                   # Blood Collection Entry View
+│       ├── DonorManagementPage.js            # Donor Directory & Profile View
+│       ├── DonorRegistration.js              # Public Donor Self-Registration Form
+│       ├── HomePage.js                       # System Landing Page
+│       ├── HospitalPage.js                   # Hospital Management View
+│       ├── InventoryPage.js                  # Blood Stock Inventory View
+│       ├── LoginPage.js                      # User Login Portal
+│       ├── ReportPage.jsx                    # Comprehensive Reports View
+│       ├── ScreeningPage.js                  # Pre-Donation Health Check View
+│       ├── Sidebar.js                        # Dynamic Nav Navigation Bar
+│       └── UserManagement.js                 # System User Administration View
+│
+├── screenshots/                              # Application UI Screenshots & Demonstrations
+└── README.md                                 # Project Documentation
+```
+## 🔐 Authentication & Security
+
+The Blood Bank Management System incorporates multi-layered security controls to protect sensitive donor health data and system operations:
+
+1. **Stateless JWT Authentication:** Upon successful login via `/api/auth/login`, the backend issues a signed JSON Web Token (JWT). The frontend stores this token in `localStorage` and automatically attaches it via `Authorization: Bearer <TOKEN>` on all private API calls (`api.js`).
+2. **Password Encryption:** User passwords are stored in encrypted format using Spring Security's `PasswordEncoder` (BCrypt).
+3. **Method-Level Security:** Backend REST endpoints are secured using `@PreAuthorize("hasRole('ADMIN')")` or `@PreAuthorize("hasAnyRole(...)")`, ensuring unauthorized HTTP calls are rejected at the server level regardless of frontend behavior.
+4. **Protected Client Routes:** Frontend navigation is encapsulated inside `<ProtectedRoute feature="...">` wrappers, preventing unauthorized users from accessing views outside their assigned role matrix (`roleConfig.js`).
+5. **CORS Enforcement:** `CorsConfig.java` controls permitted cross-origin request policies between the React client and Spring Boot server.
+
+---
+
+## 🚀 Getting Started
+
+Follow these instructions to run the application locally on your workstation.
+
+### Prerequisites
+
+Ensure the following software packages are installed:
+- **Java Development Kit (JDK 21)** or higher
+- **Node.js** (v18.x or v20.x LTS) & **npm**
+- **MySQL Server 8.0+**
+- **Git**
+
+---
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/CodeCrush-UOP/blood-bank-management-system.git
+cd blood-bank-management-system
+```
+
+---
+
+### Step 2: Configure & Launch the Backend (Spring Boot)
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Create a local MySQL database:
+   ```sql
+   CREATE DATABASE bbms_db;
+   ```
+
+3. Set your local database environment variables or update `src/main/resources/application.properties`:
+   ```properties
+   MYSQLHOST=localhost
+   MYSQLPORT=3306
+   MYSQLDATABASE=bbms_db
+   MYSQLUSER=root
+   MYSQLPASSWORD=your_password
+   PORT=8080
+   ```
+
+4. Run the Spring Boot application using the included Maven Wrapper:
+
+   **On Windows:**
+   ```powershell
+   .\mvnw.cmd spring-boot:run
+   ```
+
+   **On Linux / macOS:**
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+
+   The backend server will start at `http://localhost:8080`.
+
+---
+
+### Step 3: Configure & Launch the Frontend (React)
+
+1. Open a new terminal window and navigate to the frontend directory:
+   ```bash
+   cd blood-bank-frontend
+   ```
+
+2. Install Node dependencies:
+   ```bash
+   npm install
+   ```
+
+3. (Optional) If running against a local backend, verify the API endpoint in `src/api.js` points to your local server:
+   ```javascript
+   const BASE_URL = "http://localhost:8080";
+   ```
+
+4. Start the React development server:
+   ```bash
+   npm start
+   ```
+
+   The application will automatically open in your default browser at `http://localhost:3000`.
+
+---
+
+## 🔑 Environment Variables
+
+To protect production credentials, runtime parameters are injected using environment variables.
+
+### Backend Environment Variables (`application.properties`)
+
+```env
+# Database Credentials
+MYSQLHOST=your_mysql_host
+MYSQLPORT=3306
+MYSQLDATABASE=your_database_name
+MYSQLUSER=your_database_user
+MYSQLPASSWORD=your_database_password
+
+# Server Settings
+PORT=8080
+```
+
+### Frontend Environment Variables (`api.js`)
+
+```env
+# Production API URL
+REACT_APP_API_BASE_URL=https://backend-production-b77da.up.railway.app
+```
+
+> ⚠️ **SECURITY WARNING:** Never commit actual database passwords, secret keys, or `.env` files to public version control repositories.
