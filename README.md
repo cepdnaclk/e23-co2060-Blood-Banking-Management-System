@@ -62,10 +62,14 @@ Enforce Safety & Compliance: Require mandatory laboratory testing for five major
 
 The system implements strict **Role-Based Access Control (RBAC)** using **Spring Security** annotations and React route guards (`ProtectedRoute`). Each authenticated user is granted access according to their assigned role.
 
+## 👥 User Roles
+
+The system implements strict **Role-Based Access Control (RBAC)** using **Spring Security** annotations and React route guards (`ProtectedRoute`). Each authenticated user is granted access according to their assigned role.
+
 ```mermaid
 flowchart TB
     A["🔐 Authentication"] --> B["👨‍💼 Administrator"]
-    A --> C["🧑‍💻 Reception Staff"]
+    A --> C["👤 Reception Staff"]
     A --> D["🧪 Laboratory Staff"]
     A --> E["🏥 Hospital Staff"]
 
